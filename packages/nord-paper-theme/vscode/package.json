@@ -1,0 +1,40 @@
+{
+  "name": "nord-paper-theme",
+  "displayName": "Nord Paper Theme",
+  "description": "Minimal syntax highlighting with Nord (dark) and Paper (light) color schemes",
+  "version": "1.0.0",
+  "publisher": "geakstr",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geakstr/dotfiles"
+  },
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "keywords": [
+    "nord",
+    "paper",
+    "minimal",
+    "light",
+    "dark",
+    "theme"
+  ],
+  "contributes": {
+    "themes": [
+      {
+        "label": "Nord Paper Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/nord-paper-dark.json"
+      },
+      {
+        "label": "Nord Paper Light",
+        "uiTheme": "vs",
+        "path": "./themes/nord-paper-light.json"
+      }
+    ]
+  }
+}

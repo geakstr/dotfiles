@@ -1,0 +1,4 @@
+result
+.direnv
+target/
+packages/nord-paper-theme/firefox/web-ext-artifacts/

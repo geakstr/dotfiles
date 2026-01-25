@@ -1,0 +1,31 @@
+[package]
+authors = ["Dima Kharitonov <mail@dima.pub>"]
+name = "input-handler"
+description = "Unified input handler: keyboard remapping (Linux) and pedal controller (macOS)"
+version = "1.0.0"
+edition = "2024"
+publish = false
+
+[profile.release]
+opt-level = 3
+lto = true
+panic = "abort"
+strip = "symbols"
+codegen-units = 1
+
+[dependencies]
+tokio = { version = "1.47", features = ["full"] }
+
+# macOS-only (pedal functionality)
+[target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.10"
+core-foundation-sys = "0.8"
+enigo = "0.5"
+hidapi = "2.6"
+
+# Linux-only (keyboard remapping)
+[target.'cfg(target_os = "linux")'.dependencies]
+evdev = "0.12"
+inotify = "0.11"
+libc = "0.2"
+nix = { version = "0.29", features = ["fs"] }

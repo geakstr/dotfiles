@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Nord Paper Theme",
+  "version": "1.0.5",
+  "description": "Nord (dark) and Paper (light) theme that follows system preference",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "nord-paper-theme@dotfiles",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
+  "permissions": ["theme", "alarms"],
+  "background": {
+    "scripts": ["background.js"]
+  }
+}

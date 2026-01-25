@@ -1,0 +1,14 @@
+" Filter hints by typing link text (like Vimium)
+set hintfiltermode vimperator-reflow
+
+" Fewer, easier hint characters
+set hintchars asdfghjkl
+
+" Shorter hint names
+set hintnames short
+
+" Editor: open in foot with nvim
+set editorcmd foot -e nvim %f
+
+" Hide mode indicator (Insert/Normal)
+set modeindicator false
