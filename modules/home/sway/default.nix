@@ -183,6 +183,7 @@ in
       bindswitch --reload --locked lid:on output eDP-1 disable
       default_border pixel 1
       include /etc/sway/config.d/*
+      exec ~/.local/bin/sway-displays.sh --daemon
       exec opensnitch-ui
       exec ~/.local/bin/sway-theme.sh
     '';
