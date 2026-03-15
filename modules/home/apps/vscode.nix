@@ -47,10 +47,6 @@ let
       { src = "$HOME/.local/share/direnv"; dst = "$HOME/.local/share/direnv"; }
     ];
 
-    roBinds = [
-      { src = "/etc/passwd"; dst = "/etc/passwd"; }
-    ];
-
     roBindsTry = [
       { src = "$HOME/.nix-profile"; dst = "$HOME/.nix-profile"; }
       { src = "$HOME/.gitconfig"; dst = "$HOME/.gitconfig"; }

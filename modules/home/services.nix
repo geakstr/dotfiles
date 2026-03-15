@@ -46,22 +46,5 @@
     Install.WantedBy = [ "timers.target" ];
   };
 
-  services.gnome-keyring = {
-    enable = true;
-    components = [ "secrets" ];
-  };
-
   services.ssh-agent.enable = true;
-
-  programs.gpg = {
-    enable = true;
-    settings = {
-      keyserver = "hkps://keys.openpgp.org";
-    };
-  };
-
-  services.gpg-agent = {
-    enable = true;
-    pinentry.package = pkgs.pinentry-curses;
-  };
 }

@@ -8,10 +8,6 @@
 
   programs.git = {
     enable = true;
-    signing = {
-      key = "E4B7E314D2F9F34B";
-      signByDefault = true;
-    };
     settings = {
       user.name = personal.userName;
       user.email = personal.userEmail;
