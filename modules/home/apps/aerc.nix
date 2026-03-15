@@ -31,6 +31,7 @@ let
     # Config and state directories
     roBindsTry = [
       { src = "$HOME/.config/aerc"; dst = "$HOME/.config/aerc"; }
+      { src = "$HOME/.config/protonmail/aerc-smtp-creds"; dst = "$HOME/.config/protonmail/aerc-smtp-creds"; }
     ];
 
     bindsTry = [
@@ -168,7 +169,7 @@ in
     Port 1143
     User YOUR_EMAIL@protonmail.com
     PassCmd "cat ~/.config/protonmail/mbsync-pass"
-    SSLType None
+    TLSType None
     AuthMechs LOGIN
 
     IMAPStore proton-remote
@@ -182,7 +183,7 @@ in
     Channel proton
     Far :proton-remote:
     Near :proton-local:
-    Patterns *
+    Patterns * !"All Mail"
     Create Both
     Expunge Both
     SyncState *
@@ -197,9 +198,8 @@ in
     Service = {
       Type = "oneshot";
       ExecStart = "${pkgs.isync}/bin/mbsync -a";
-      # Retry on failure (bridge might not be ready)
-      ExecStartPre = "${pkgs.coreutils}/bin/sleep 2";
       Environment = "PATH=${pkgs.coreutils}/bin";
+      TimeoutStartSec = 120;
     };
   };
 
@@ -379,21 +379,23 @@ in
     # 3. Copy this to accounts.conf and fill in your details
 
     # Option A: IMAP (direct from bridge, no local storage)
-    [Proton]
-    source = imap://username:bridge-password@127.0.0.1:1143
-    outgoing = smtp://username:bridge-password@127.0.0.1:1025
-    default = INBOX
-    from = Your Name <your@protonmail.com>
-    copy-to = Sent
-
-    # Option B: Maildir (local backup, offline access, sorting)
-    # Requires mbsync setup - see ~/.mbsyncrc
     # [Proton]
-    # source = maildir://~/mail
-    # outgoing = smtp://username:bridge-password@127.0.0.1:1025
+    # source = imap+insecure://username:bridge-password@127.0.0.1:1143
+    # outgoing = smtp+insecure://username:bridge-password@127.0.0.1:1025
+    # outgoing-cred-cmd = cat ~/.config/protonmail/aerc-smtp-creds
     # default = INBOX
     # from = Your Name <your@protonmail.com>
     # copy-to = Sent
+
+    # Option B: Maildir (local backup, offline access, sorting)
+    # Requires mbsync setup - see ~/.mbsyncrc
+    [Proton]
+    source = maildir://~/mail
+    outgoing = smtp+insecure://127.0.0.1:1025
+    outgoing-cred-cmd = cat ~/.config/protonmail/aerc-smtp-creds
+    default = INBOX
+    from = Your Name <your@protonmail.com>
+    copy-to = Sent
   '';
 
   # Proton Mail Bridge as systemd user service with hardening
@@ -456,7 +458,7 @@ in
         "PATH=/run/current-system/sw/bin:%h/.local/bin"
         "XDG_CURRENT_DESKTOP=sway"
         "XDG_DATA_DIRS=/run/current-system/sw/share"
-        "DISPLAY=:0"
+        "WAYLAND_DISPLAY=wayland-1"
       ];
       ExecStartPre = "/run/current-system/sw/bin/bash -c 'mkdir -p %h/.cache/aerc-open && rm -f %h/.cache/aerc-open/open-fifo && mkfifo %h/.cache/aerc-open/open-fifo'";
       ExecStart = "/run/current-system/sw/bin/bash -c 'while true; do if read -r line < %h/.cache/aerc-open/open-fifo; then %h/.local/bin/firefox \"$line\" & fi; done'";
