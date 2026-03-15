@@ -70,6 +70,11 @@ in
       source = ../../scripts/volume-notify.sh;
     };
 
+    ".local/bin/sway-displays.sh" = {
+      executable = true;
+      source = ../../scripts/sway-displays.sh;
+    };
+
     ".local/bin/sway-theme.sh" = {
       executable = true;
       source = ../../scripts/sway-theme.sh;
@@ -78,6 +83,11 @@ in
     ".local/bin/toggle-theme.sh" = {
       executable = true;
       source = ../../scripts/toggle-theme.sh;
+    };
+
+    ".local/bin/gpu-offload" = {
+      executable = true;
+      source = ../../scripts/gpu-offload.sh;
     };
   };
 }

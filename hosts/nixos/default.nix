@@ -27,6 +27,7 @@
     "flakes"
   ];
 
+  hardware.nvidia-egpu.enable = true;
   hardware.uinput.enable = true;
   hardware.i2c.enable = true;
 

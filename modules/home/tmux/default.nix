@@ -13,6 +13,7 @@ in
     keyMode = "vi";
 
     extraConfig = ''
+      set -g update-environment "SWAYSOCK WAYLAND_DISPLAY DISPLAY"
       set -sg escape-time 10
       set -g allow-passthrough on
       set -g status off

@@ -12,7 +12,7 @@
       asciimap = "telnet mapscii.me";
       bat = "bat-themed";
       email = "aerc";
-      sway = "sway --unsupported-gpu";
+      sway = "if [ -e /dev/dri/card2 ]; then WLR_DRM_DEVICES=/dev/dri/card2:/dev/dri/card1 sway --unsupported-gpu; else sway --unsupported-gpu; fi";
     };
     sessionVariables = {
       EDITOR = "nvim";

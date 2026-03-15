@@ -17,9 +17,8 @@ in
       };
 
       output = {
+        # Laptop display
         "eDP-1" = { scale = "2"; position = "5120 0"; };
-        "DP-3" = { mode = "5120x1440@144Hz"; position = "0 0"; scale = "1"; };
-        "DP-1" = { mode = "5120x1440@120Hz"; position = "0 0"; scale = "1"; };
       };
 
       input = {
