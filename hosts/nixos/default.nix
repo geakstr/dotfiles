@@ -75,6 +75,8 @@
     XCURSOR_THEME = "Adwaita";
   };
 
+  services.dbus.implementation = "broker";
+
   services.opensnitch.enable = true;
 
   services.tailscale.enable = true;
