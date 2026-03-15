@@ -44,6 +44,9 @@ let
         installation_mode = "force_installed";
       };
       "nord-paper-theme@dotfiles" = {
+        installation_mode = "blocked";
+      };
+      "nordpaper-theme@dotfiles" = {
         install_url = "file://${nordPaperTheme}/nord-paper-theme.xpi";
         installation_mode = "force_installed";
       };
@@ -51,11 +54,10 @@ let
         install_url = "https://addons.mozilla.org/firefox/downloads/latest/readwise-highlighter/latest.xpi";
         installation_mode = "force_installed";
       };
-    };
-    Preferences = {
-      "layout.css.prefers-color-scheme.content-override" = 2;
-      "browser.theme.content-theme" = 2;
-      "browser.theme.toolbar-theme" = 2;
+      "78272b6fa58f4a1abaac99321d503a20@proton.me" = {
+        install_url = "https://addons.mozilla.org/firefox/downloads/latest/proton-pass/latest.xpi";
+        installation_mode = "force_installed";
+      };
     };
   };
 

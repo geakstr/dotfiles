@@ -264,6 +264,13 @@ user_pref("browser.display.use_document_fonts", 1);
 user_pref("font.name.serif.x-western", "ETBembo");
 user_pref("font.name.sans-serif.x-western", "Inter");
 user_pref("font.name.monospace.x-western", "CaskaydiaCove Nerd Font Mono");
+user_pref("sidebar.position_start", false);
+user_pref("browser.newtabpage.activity-stream.showSearch", false);
+
+// Theme - follow system for both UI and content
+user_pref("layout.css.prefers-color-scheme.content-override", 2);
+user_pref("browser.theme.content-theme", 2);
+user_pref("browser.theme.toolbar-theme", 2);
 /****************************************************************************
  * SECTION: SMOOTHFOX                                                       *
 ****************************************************************************/

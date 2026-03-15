@@ -127,6 +127,12 @@
     # Format arguments
     fmtArgs = lib.concatStringsSep " " args;
 
+    # Hosts file with sandbox hostname to avoid slow DNS lookups
+    sandboxHosts = pkgs.writeText "sandbox-hosts" ''
+      127.0.0.1 localhost sandbox
+      ::1 localhost sandbox
+    '';
+
     # Network flag
     networkFlag = if enableNetwork then "--share-net" else "";
 
@@ -203,7 +209,9 @@
       ${nixLdFlags} \
       \
       --ro-bind /etc/resolv.conf /etc/resolv.conf \
-      --ro-bind /etc/hosts /etc/hosts \
+      --ro-bind ${sandboxHosts} /etc/hosts \
+      --ro-bind /etc/nsswitch.conf /etc/nsswitch.conf \
+      --ro-bind-try /run/systemd/resolve /run/systemd/resolve \
       --ro-bind /etc/ssl /etc/ssl \
       --ro-bind /etc/static/ssl /etc/static/ssl \
       --ro-bind /etc/localtime /etc/localtime \
