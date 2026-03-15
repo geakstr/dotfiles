@@ -113,10 +113,10 @@ impl Remapper {
 
         let key = match event.kind() {
             InputEventKind::Key(k) => k,
-            _ => {
-                self.virtual_kbd.emit_raw(event)?;
-                return Ok(false);
-            }
+            // Drop non-key events (EV_MSC scan codes, SYN_REPORT, etc.)
+            // The virtual keyboard emits its own SYN_REPORT after each key event,
+            // so forwarding these just creates fragmented event packets.
+            _ => return Ok(false),
         };
 
         let value = event.value(); // 0 = release, 1 = press, 2 = repeat
@@ -312,7 +312,12 @@ impl Remapper {
                     self.left_meta.mark_used();
                     self.right_meta.mark_used();
                 }
-                self.virtual_kbd.emit_raw(event)?;
+                // Skip repeat events — sway generates its own repeats at the
+                // compositor level, so forwarding kernel repeats through the
+                // virtual keyboard causes doubled/irregular repeat streams.
+                if value != 2 {
+                    self.virtual_kbd.emit_raw(event)?;
+                }
                 Ok(false)
             }
         }

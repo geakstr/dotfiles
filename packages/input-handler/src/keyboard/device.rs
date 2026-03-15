@@ -1,4 +1,4 @@
-use evdev::{Device, Key};
+use evdev::{Device, Key, RelativeAxisType};
 use std::fs;
 use std::path::PathBuf;
 
@@ -33,6 +33,16 @@ pub fn find_keyboards() -> Vec<KeyboardInfo> {
                     // Skip our own virtual keyboard
                     if name.contains("input-handler") {
                         continue;
+                    }
+
+                    // Skip devices with mouse axes (REL_X + REL_Y) — these are
+                    // mice/trackballs that happen to also expose keyboard keys
+                    if let Some(rel) = device.supported_relative_axes() {
+                        if rel.contains(RelativeAxisType::REL_X)
+                            && rel.contains(RelativeAxisType::REL_Y)
+                        {
+                            continue;
+                        }
                     }
 
                     // Check if device has key capabilities (is a keyboard)

@@ -8,13 +8,14 @@ pub use virtual_kbd::VirtualKeyboard;
 
 use evdev::InputEvent;
 use inotify::{Inotify, WatchMask};
-use nix::fcntl::{fcntl, FcntlArg, OFlag};
+use nix::poll::{poll, PollFd, PollFlags, PollTimeout};
+use std::os::fd::BorrowedFd;
 use std::os::unix::io::AsRawFd;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc;
 use std::sync::Arc;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 /// An input event tagged with keyboard identity
 pub struct KeyboardEvent {
@@ -75,18 +76,26 @@ fn spawn_keyboard_readers(tx: mpsc::Sender<KeyboardEvent>) {
                         }
                     };
 
-                    // Set non-blocking mode for timeout support
-                    let fd = keyboard.as_raw_fd();
-                    if let Err(e) = fcntl(fd, FcntlArg::F_SETFL(OFlag::O_NONBLOCK)) {
-                        eprintln!("Failed to set non-blocking mode: {}", e);
-                        return;
-                    }
+                    let raw_fd = keyboard.as_raw_fd();
 
                     loop {
-                        // Check if we should stop (device change detected)
                         if should_stop.load(Ordering::Relaxed) {
                             eprintln!("Reader stopping due to device change");
                             return;
+                        }
+
+                        // Block until the fd is readable or 200ms timeout (to check should_stop)
+                        // SAFETY: keyboard is alive for the entire loop, fd remains valid
+                        let borrowed_fd = unsafe { BorrowedFd::borrow_raw(raw_fd) };
+                        let mut poll_fds = [PollFd::new(borrowed_fd, PollFlags::POLLIN)];
+                        match poll(&mut poll_fds, PollTimeout::from(200u16)) {
+                            Ok(0) => continue,
+                            Ok(_) => {}
+                            Err(nix::errno::Errno::EINTR) => continue,
+                            Err(e) => {
+                                eprintln!("Poll error on {:?}: {}", info.path, e);
+                                return;
+                            }
                         }
 
                         match keyboard.fetch_events() {
@@ -98,19 +107,13 @@ fn spawn_keyboard_readers(tx: mpsc::Sender<KeyboardEvent>) {
                                         event,
                                     };
                                     if tx.send(kbd_event).is_err() {
-                                        return; // Channel closed
+                                        return;
                                     }
                                 }
                             }
                             Err(e) => {
-                                // EAGAIN/EWOULDBLOCK means no events available (non-blocking)
-                                if e.kind() == std::io::ErrorKind::WouldBlock {
-                                    // Small sleep to avoid busy-waiting
-                                    thread::sleep(Duration::from_millis(10));
-                                    continue;
-                                }
                                 eprintln!("Keyboard read error on {:?}: {}", info.path, e);
-                                return; // Device disconnected
+                                return;
                             }
                         }
                     }
@@ -152,8 +155,9 @@ fn spawn_keyboard_readers(tx: mpsc::Sender<KeyboardEvent>) {
             should_stop.store(true, Ordering::Relaxed);
             let _ = watcher_handle.join();
 
-            // Brief pause before reconnecting
-            thread::sleep(Duration::from_millis(500));
+            // Wait for device enumeration to settle before reconnecting
+            eprintln!("Waiting for device enumeration to settle...");
+            thread::sleep(Duration::from_secs(2));
             eprintln!("Reconnecting to keyboards...");
         }
     });
@@ -178,24 +182,54 @@ fn watch_device_changes(should_stop: Arc<AtomicBool>) {
         return;
     }
 
+    let raw_fd = inotify.as_raw_fd();
     let mut buffer = [0u8; 4096];
+    let mut debounce_deadline: Option<Instant> = None;
+    const DEBOUNCE_DURATION: Duration = Duration::from_secs(1);
 
     loop {
         if should_stop.load(Ordering::Relaxed) {
             return;
         }
 
-        // Use a short timeout to allow checking should_stop flag
+        // Check if debounce timer expired
+        if let Some(deadline) = debounce_deadline {
+            if Instant::now() >= deadline {
+                eprintln!("Device changes settled, signaling reconnect");
+                should_stop.store(true, Ordering::Relaxed);
+                return;
+            }
+        }
+
+        // Wait for inotify events with poll instead of busy-waiting
+        let timeout = match debounce_deadline {
+            Some(deadline) => {
+                let remaining = deadline.saturating_duration_since(Instant::now());
+                PollTimeout::from(remaining.as_millis().min(1000) as u16)
+            }
+            None => PollTimeout::from(1000u16),
+        };
+        // SAFETY: inotify is alive for the entire loop, fd remains valid
+        let borrowed_fd = unsafe { BorrowedFd::borrow_raw(raw_fd) };
+        let mut poll_fds = [PollFd::new(borrowed_fd, PollFlags::POLLIN)];
+        match poll(&mut poll_fds, timeout) {
+            Ok(0) => continue,
+            Ok(_) => {}
+            Err(nix::errno::Errno::EINTR) => continue,
+            Err(e) => {
+                eprintln!("Inotify poll error: {}", e);
+                return;
+            }
+        }
+
         match inotify.read_events(&mut buffer) {
             Ok(events) => {
                 for event in events {
-                    // Only care about eventN devices
                     if let Some(name) = event.name {
                         let name_str = name.to_string_lossy();
                         if name_str.starts_with("event") {
                             eprintln!("Device change detected: {:?}", name);
-                            should_stop.store(true, Ordering::Relaxed);
-                            return;
+                            debounce_deadline = Some(Instant::now() + DEBOUNCE_DURATION);
                         }
                     }
                 }
@@ -207,8 +241,5 @@ fn watch_device_changes(should_stop: Arc<AtomicBool>) {
                 }
             }
         }
-
-        // Small sleep between checks
-        thread::sleep(Duration::from_millis(100));
     }
 }
