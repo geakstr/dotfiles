@@ -114,8 +114,8 @@
         ]
       },
       "locked": {
-        "lastModified": 1773264488,
-        "narHash": "sha256-rK0507bDuWBrZo+0zts9bCs/+RRUEHuvFE5DHWPxX/Q=",
+        "lastModified": 1773607598,
+        "narHash": "sha256-nPV/IE0NwQjYcXkEGOmCIEsX9i8HFMeq2RupYzfVdiI=",
         "type": "tarball",
         "url": "https://github.com/nix-community/home-manager/archive/release-25.11.tar.gz"
       },
@@ -301,8 +301,8 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1773576717,
-        "narHash": "sha256-2TqOXUcnZ7YvH12tTt7vcGFDC89mLOxrm0KqYimnqV0=",
+        "lastModified": 1773595085,
+        "narHash": "sha256-NljKkEiULbTUiZgLTshHGIZHFMjHNcVb5wakmzNtmUM=",
         "type": "tarball",
         "url": "https://github.com/oraios/serena/archive/main.tar.gz"
       },

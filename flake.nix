@@ -31,11 +31,10 @@
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
     personal = import ./config/personal.nix;
-    secrets = import ./config/secrets.nix;
   in {
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       inherit system;
-      specialArgs = { inherit claude-code serena personal secrets rust-overlay lanzaboote; };
+      specialArgs = { inherit claude-code serena personal rust-overlay lanzaboote; };
       modules = [
         ./hosts/nixos
         lanzaboote.nixosModules.lanzaboote
