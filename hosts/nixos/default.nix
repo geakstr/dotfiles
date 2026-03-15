@@ -48,6 +48,7 @@
   };
   services.udev.extraRules = ''
     KERNEL=="uinput", GROUP="uinput", MODE="0660"
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{power/wakeup}="enabled"
   '';
 
   environment.systemPackages = with pkgs; [
@@ -97,6 +98,19 @@
     HandleLidSwitchDocked = "ignore";
     IdleAction = "suspend";
     IdleActionSec = "3h";
+  };
+
+  services.tlp = {
+    enable = true;
+    settings = {
+      CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+      CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
+      CPU_BOOST_ON_BAT = 0;
+      STOP_CHARGE_THRESH_BAT0 = 80;
+      CPU_SCALING_GOVERNOR_ON_AC = "performance";
+      CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
+      CPU_BOOST_ON_AC = 1;
+    };
   };
 
   services.xserver.enable = false;

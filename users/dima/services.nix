@@ -36,57 +36,58 @@ in
     Service = {
       Type = "simple";
       Restart = "always";
-      RestartSec = 1;
+      RestartSec = 5;
       ExecStart = let
         swayidle = "${pkgs.swayidle}/bin/swayidle";
         swaylock = "${pkgs.swaylock}/bin/swaylock";
-        swaymsg = "${pkgs.sway}/bin/swaymsg";
+        cat = "${pkgs.coreutils}/bin/cat";
+        stdbuf = "${pkgs.coreutils}/bin/stdbuf";
+        udevadm = "${pkgs.systemd}/bin/udevadm";
         script = pkgs.writeShellScript "swayidle-power-aware" ''
           get_power_state() {
             if [ -f /sys/class/power_supply/AC/online ]; then
-              cat /sys/class/power_supply/AC/online
+              ${cat} /sys/class/power_supply/AC/online
             elif [ -f /sys/class/power_supply/ACAD/online ]; then
-              cat /sys/class/power_supply/ACAD/online
+              ${cat} /sys/class/power_supply/ACAD/online
             else
-              echo "1"  # Default to AC if unknown
+              echo "1"
             fi
           }
 
-          run_swayidle() {
+          start_swayidle() {
             if [ "$(get_power_state)" = "1" ]; then
-              # On charger: 10 min lock, 1 hour sleep
               ${swayidle} -w \
                 timeout 600 '${swaylock} -f' \
                 timeout 3600 'systemctl suspend' \
-                before-sleep '${swaylock} -f'
+                before-sleep '${swaylock} -f' &
             else
-              # On battery: 3 min lock, 15 min sleep
               ${swayidle} -w \
                 timeout 180 '${swaylock} -f' \
                 timeout 900 'systemctl suspend' \
-                before-sleep '${swaylock} -f'
+                before-sleep '${swaylock} -f' &
             fi
+            swayidle_pid=$!
           }
 
           cleanup() {
-            pkill -P $$ swayidle 2>/dev/null
+            kill $swayidle_pid 2>/dev/null
+            wait $swayidle_pid 2>/dev/null
           }
           trap cleanup EXIT
 
-          while true; do
-            current_state=$(get_power_state)
-            run_swayidle &
-            swayidle_pid=$!
+          start_swayidle
 
-            # Monitor for power state changes
-            while [ "$(get_power_state)" = "$current_state" ]; do
-              sleep 5
+          # Watch for AC power changes via kernel uevent (no dbus)
+          ${stdbuf} -oL ${udevadm} monitor --subsystem-match=power_supply --udev 2>/dev/null | \
+            while read -r line; do
+              case "$line" in
+                *change*power_supply*)
+                  kill $swayidle_pid 2>/dev/null
+                  wait $swayidle_pid 2>/dev/null
+                  start_swayidle
+                  ;;
+              esac
             done
-
-            # Power state changed, restart swayidle
-            kill $swayidle_pid 2>/dev/null
-            wait $swayidle_pid 2>/dev/null
-          done
         '';
       in "${script}";
     };
