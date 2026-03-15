@@ -24,6 +24,7 @@ in
       input = {
         "type:keyboard" = {
           xkb_layout = "us,ru";
+          xkb_options = "caps:none";
           repeat_delay = "175";
           repeat_rate = "40";
         };
