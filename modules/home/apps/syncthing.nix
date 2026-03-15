@@ -38,4 +38,5 @@ in
   };
 
   home.file.".local/state/syncthing/.keep".text = "";
+  home.file."sync/.keep".text = "";
 }
