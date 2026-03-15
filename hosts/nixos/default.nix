@@ -65,6 +65,7 @@
     mosh
     opensnitch-ui
     pciutils
+    protonvpn-gui
   ];
 
   environment.sessionVariables = {
