@@ -9,7 +9,8 @@
     rustc rustfmt cargo clippy
     gcc gnumake tree-sitter pkg-config nixfmt-rfc-style cloc rust-script inetutils asciinema
     bun nodejs
-    ffmpeg
+    ffmpeg sox
+    tmux sqlite
   ];
 
   home.sessionPath = [ "$HOME/.local/bin" ];
