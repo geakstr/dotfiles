@@ -26,6 +26,12 @@
       options = [ "fmask=0077" "dmask=0077" ];
     };
 
+  fileSystems."/mnt/data" =
+    { device = "/dev/disk/by-uuid/A072C1C972C1A47E";
+      fsType = "ntfs3";
+      options = [ "rw" "uid=1000" "gid=100" "nofail" ];
+    };
+
   swapDevices =
     [ { device = "/dev/mapper/luks-cfffc0b1-1359-4158-b88c-53d4ebbc5a54"; }
     ];
